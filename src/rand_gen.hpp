@@ -5,14 +5,16 @@
 #include <random>
 #include <memory>
 #include <exception>
+#include <limits>
 
 
+template <class INT_TYPE>
 class RAND_GEN
 {
-	using INT_TYPE = int64_t;
 	using DIST_TYPE = std::uniform_int_distribution<INT_TYPE>;
 	using ENGINE_TYPE = std::mt19937_64;
-	using PARAM_TYPE = DIST_TYPE::param_type;
+	using PARAM_TYPE = typename DIST_TYPE::param_type;
+
 public:
 
 	INT_TYPE get()
@@ -25,13 +27,23 @@ public:
 		m_dis.param(PARAM_TYPE(min, max));
 	}
 
-	static std::unique_ptr<RAND_GEN> make(INT_TYPE seed = 1)
+	static std::unique_ptr<RAND_GEN> make(
+		INT_TYPE seed = 1,
+		INT_TYPE min = std::numeric_limits<INT_TYPE>::min(),
+		INT_TYPE max = std::numeric_limits<INT_TYPE>::max())
 	{
-		return std::make_unique<RAND_GEN>(seed);
+		auto rand_gen = std::make_unique<RAND_GEN>(seed);
+		rand_gen->set_range(min, max);
+		return rand_gen;
 	}
 
-	RAND_GEN(INT_TYPE seed = 1) :
-		m_gen(seed)
+	RAND_GEN(
+		INT_TYPE seed = 1,
+		INT_TYPE min = std::numeric_limits<INT_TYPE>::min(),
+		INT_TYPE max = std::numeric_limits<INT_TYPE>::max())
+	:
+		m_gen(seed),
+		m_dis(min, max)
 	{
 
 	}
